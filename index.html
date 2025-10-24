@@ -3,158 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Datos</title>
+    <title>Visualizador de Datos TXT</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1200px;
-            margin: 0 auto;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            background-color: #f5f7fa;
         }
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-        }
-        h1 {
-            color: #2c3e50;
-        }
+        
         .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .data-section {
-            flex: 1;
-            min-width: 300px;
+            max-width: 900px;
+            margin: 0 auto;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .data-container {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
             padding: 20px;
+            margin-top: 20px;
+            min-height: 200px;
         }
-        .data-section h2 {
-            margin-top: 0;
-            color: #3498db;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
+        
         .data-content {
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
             white-space: pre-wrap;
+            line-height: 1.6;
         }
+        
         .loading {
             text-align: center;
-            padding: 20px;
-            color: #7f8c8d;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
         }
+        
         .error {
-            color: #e74c3c;
-            background-color: #fadbd8;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-        .info-box {
-            background-color: #d6eaf8;
-            border-left: 4px solid #3498db;
+            background: #f8d7da;
+            color: #721c24;
             padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 0 4px 4px 0;
+            border-radius: 5px;
+            border-left: 4px solid #dc3545;
         }
-        footer {
-            margin-top: 30px;
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
             text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-top: 4px solid #3498db;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .stat-label {
             color: #7f8c8d;
             font-size: 0.9em;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            border-top: 1px solid #eee;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Visualizador de Datos</h1>
-        <p>Contenido cargado desde archivo TXT remoto</p>
-    </header>
-
-    <div class="info-box">
-        <p>Esta página carga y muestra los datos del archivo TXT ubicado en:</p>
-        <p><strong>https://github.com/AlejandroCasco1/DataImg/blob/main/mgData.txt</strong></p>
-    </div>
-
     <div class="container">
-        <section class="data-section">
-            <h2>Contenido del Archivo</h2>
-            <div id="data-content" class="data-content">
-                <div class="loading">Cargando datos...</div>
-            </div>
-        </section>
+        <header>
+            <h1>📊 Visualizador de Datos</h1>
+            <p class="subtitle">Contenido cargado desde archivo TXT</p>
+        </header>
         
-        <section class="data-section">
-            <h2>Información del Archivo</h2>
-            <div id="file-info">
-                <div class="loading">Cargando información...</div>
+        <div class="content">
+            <div class="data-container">
+                <div id="data-content" class="data-content">
+                    <div class="loading">Cargando datos del archivo mgData.txt...</div>
+                </div>
             </div>
-        </section>
+            
+            <div class="stats" id="stats">
+                <!-- Las estadísticas se generarán con JavaScript -->
+            </div>
+            
+            <div class="buttons">
+                <button class="btn-primary" onclick="loadData()">🔄 Recargar Datos</button>
+                <button class="btn-secondary" onclick="downloadData()">💾 Descargar Datos</button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Datos cargados desde: https://github.com/AlejandroCasco1/DataImg/blob/main/mgData.txt</p>
+        </footer>
     </div>
-
-    <footer>
-        <p>Datos cargados desde GitHub - Creado con HTML, CSS y JavaScript</p>
-    </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        // URL del archivo - CAMBIA ESTA URL por tu GitHub Pages
+        // Si no tienes GitHub Pages configurado, usa la URL alternativa de abajo
+        const txtUrl = 'https://alejandrocasco1.github.io/DataImg/mgData.txt';
+        // URL alternativa (puede tener problemas de CORS):
+        // const txtUrl = 'https://raw.githubusercontent.com/AlejandroCasco1/DataImg/main/mgData.txt';
+        
+        async function loadData() {
             const dataContent = document.getElementById('data-content');
-            const fileInfo = document.getElementById('file-info');
+            const stats = document.getElementById('stats');
             
-            // URL del archivo TXT (usando la versión raw para obtener el contenido directo)
-            const txtUrl = 'https://raw.githubusercontent.com/AlejandroCasco1/DataImg/main/mgData.txt';
-            
-            // Función para cargar y mostrar los datos
-            async function loadData() {
-                try {
-                    // Realizamos la petición al archivo
-                    const response = await fetch(txtUrl);
-                    
-                    if (!response.ok) {
-                        throw new Error(`Error al cargar el archivo: ${response.status} ${response.statusText}`);
-                    }
-                    
-                    // Obtenemos el contenido como texto
-                    const textData = await response.text();
-                    
-                    // Mostramos el contenido en la página
-                    dataContent.innerHTML = `<pre>${textData}</pre>`;
-                    
-                    // Mostramos información sobre el archivo
-                    const lines = textData.split('\n').filter(line => line.trim() !== '');
-                    const wordCount = textData.split(/\s+/).filter(word => word !== '').length;
-                    const charCount = textData.length;
-                    
-                    fileInfo.innerHTML = `
-                        <p><strong>Líneas de texto:</strong> ${lines.length}</p>
-                        <p><strong>Palabras:</strong> ${wordCount}</p>
-                        <p><strong>Caracteres:</strong> ${charCount}</p>
-                        <p><strong>Origen:</strong> <a href="${txtUrl}" target="_blank">Ver archivo original</a></p>
-                    `;
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    dataContent.innerHTML = `<div class="error">No se pudieron cargar los datos: ${error.message}</div>`;
-                    fileInfo.innerHTML = `<div class="error">No se pudo obtener información del archivo.</div>`;
+            try {
+                dataContent.innerHTML = '<div class="loading">Cargando datos...</div>';
+                stats.innerHTML = '';
+                
+                // Intentamos cargar el archivo
+                const response = await fetch(txtUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
                 }
+                
+                const textData = await response.text();
+                
+                // Mostramos el contenido
+                dataContent.innerHTML = `<pre class="data-content">${textData}</pre>`;
+                
+                // Calculamos estadísticas
+                const lines = textData.split('\n').filter(line => line.trim() !== '');
+                const words = textData.split(/\s+/).filter(word => word !== '');
+                const characters = textData.length;
+                
+                // Mostramos estadísticas
+                stats.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">${lines.length}</div>
+                        <div class="stat-label">Líneas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${words.length}</div>
+                        <div class="stat-label">Palabras</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${characters}</div>
+                        <div class="stat-label">Caracteres</div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                dataContent.innerHTML = `
+                    <div class="error">
+                        <strong>Error al cargar los datos:</strong><br>
+                        ${error.message}<br><br>
+                        <strong>Solución:</strong><br>
+                        1. Configura GitHub Pages en tu repositorio<br>
+                        2. O usa un servidor local para probar este archivo
+                    </div>
+                `;
             }
-            
-            // Cargamos los datos cuando la página esté lista
-            loadData();
-        });
+        }
+        
+        function downloadData() {
+            const dataContent = document.querySelector('.data-content pre');
+            if (dataContent) {
+                const blob = new Blob([dataContent.textContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'mgData_copia.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+        
+        // Cargar datos cuando la página se abre
+        document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
 </html>
