@@ -1,256 +1,557 @@
+
+
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Datos TXT</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+  <meta charset="UTF-8" />
+  <title>Live Sports Scoreboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta property="og:title" content="Live Sports Scoreboard">
+  <meta property="og:description" content="Built with Magic Loops">
+  <meta property="og:image" content="https://magicloops.dev/images/preview.png">
+  <meta property="og:url" content="https://ka0p2.magicloops.app">
+  <meta name="twitter:card" content="https://magicloops.dev/images/preview.png">
+  <style>
+    body {
+      margin: 0; padding: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    iframe {
+      border: none;
+      width: 100%;
+      height: 100vh;
+    }
+    .hidden-iframe {
+      display: none; /* keep hidden for silent refresh */
+      width: 0; height: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- 
+    The main application content is in an <iframe> 
+    with user-generated HTML (appData.html).
+  -->
+  <iframe 
+    srcdoc='&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;es&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+    &lt;title&gt;Tabla de Puntuación Deportiva&lt;/title&gt;
+    &lt;link href=&quot;https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css&quot; rel=&quot;stylesheet&quot;&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css&quot;&gt;
+    &lt;link href=&quot;https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&amp;family=Roboto:wght@400;500;700&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+    &lt;style id=&quot;app-style&quot;&gt;
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background: #f0f2f5;
+            font-family: &#039;Roboto&#039;, sans-serif;
         }
         
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        .stadium-header {
+            background-image: url(&#039;https://cdn.pixabay.com/photo/2014/10/14/20/24/football-488714_1280.jpg&#039;);
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .stadium-header::after {
+            content: &#039;&#039;;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+        
+        .stadium-header &gt; * {
+            position: relative;
+            z-index: 2;
+        }
+        
+        h1, h2, h3, h4, th {
+            font-family: &#039;Oswald&#039;, sans-serif;
+            text-transform: uppercase;
+        }
+        
+        .team-table {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
         
-        header {
-            background: #2c3e50;
+        .team-table th {
+            background-color: #1e40af;
             color: white;
-            padding: 30px;
-            text-align: center;
+            position: sticky;
+            top: 0;
         }
         
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+        .team-table tr:nth-child(odd) {
+            background-color: #f9fafb;
         }
         
-        .subtitle {
-            font-size: 1.1em;
-            opacity: 0.8;
+        .team-table tr:nth-child(even) {
+            background-color: #e5e7eb;
         }
         
-        .content {
-            padding: 30px;
+        .team-table tr:hover {
+            background-color: #dbeafe;
         }
         
-        .data-container {
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-            min-height: 200px;
-        }
-        
-        .data-content {
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            line-height: 1.6;
-        }
-        
-        .loading {
-            text-align: center;
-            color: #6c757d;
-            font-style: italic;
-            padding: 40px;
-        }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 5px;
-            border-left: 4px solid #dc3545;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border-top: 4px solid #3498db;
-        }
-        
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        
-        .stat-label {
-            color: #7f8c8d;
-            font-size: 0.9em;
-        }
-        
-        .buttons {
+        .loading-indicator {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
         }
         
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #1e40af;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            margin: 1rem 0;
+            display: none;
+        }
+        
+        .refresh-button {
             transition: all 0.3s ease;
         }
         
-        .btn-primary {
-            background: #3498db;
-            color: white;
+        .refresh-button:hover {
+            transform: rotate(180deg);
         }
         
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #7f8c8d;
-            border-top: 1px solid #eee;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>📊 Visualizador de Datos</h1>
-            <p class="subtitle">Contenido cargado desde archivo TXT</p>
-        </header>
-        
-        <div class="content">
-            <div class="data-container">
-                <div id="data-content" class="data-content">
-                    <div class="loading">Cargando datos del archivo mgData.txt...</div>
-                </div>
-            </div>
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
             
-            <div class="stats" id="stats">
-                <!-- Las estadísticas se generarán con JavaScript -->
-            </div>
-            
-            <div class="buttons">
-                <button class="btn-primary" onclick="loadData()">🔄 Recargar Datos</button>
-                <button class="btn-secondary" onclick="downloadData()">💾 Descargar Datos</button>
-            </div>
-        </div>
+            .team-table th, .team-table td {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+        }
         
-        <footer>
-            <p>Datos cargados desde: https://github.com/AlejandroCasco1/DataImg/blob/main/mgData.txt</p>
-        </footer>
-    </div>
+        .update-info {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class=&quot;stadium-header py-16&quot;&gt;
+        &lt;div class=&quot;container mx-auto text-center&quot;&gt;
+            &lt;h1 class=&quot;text-4xl md:text-5xl font-bold text-white mb-4&quot;&gt;TABLA DE PUNTUACIÓN&lt;/h1&gt;
+            &lt;p class=&quot;text-xl text-blue-200&quot;&gt;Seguimiento de victorias en tiempo real&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class=&quot;container mx-auto py-8 px-4&quot;&gt;
+        &lt;div class=&quot;bg-white rounded-lg shadow-lg p-6 mb-6&quot;&gt;
+            &lt;div class=&quot;flex justify-between items-center mb-6&quot;&gt;
+                &lt;h2 class=&quot;text-2xl font-bold text-gray-800&quot;&gt;Clasificación de Equipos&lt;/h2&gt;
+                &lt;button id=&quot;refresh-btn&quot; class=&quot;refresh-button bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full flex items-center&quot;&gt;
+                    &lt;i class=&quot;fas fa-sync-alt mr-2&quot;&gt;&lt;/i&gt; Actualizar
+                &lt;/button&gt;
+            &lt;/div&gt;
+            
+            &lt;div id=&quot;error-message&quot; class=&quot;error-message&quot;&gt;
+                &lt;p&gt;&lt;i class=&quot;fas fa-exclamation-circle mr-2&quot;&gt;&lt;/i&gt; Error al cargar los datos. Por favor intente más tarde.&lt;/p&gt;
+            &lt;/div&gt;
+            
+            &lt;div class=&quot;overflow-x-auto&quot;&gt;
+                &lt;table class=&quot;team-table w-full border-collapse&quot;&gt;
+                    &lt;thead&gt;
+                        &lt;tr&gt;
+                            &lt;th class=&quot;py-3 px-6 text-left&quot;&gt;#&lt;/th&gt;
+                            &lt;th class=&quot;py-3 px-6 text-left&quot;&gt;Equipo&lt;/th&gt;
+                            &lt;th class=&quot;py-3 px-6 text-center&quot;&gt;Victorias&lt;/th&gt;
+                        &lt;/tr&gt;
+                    &lt;/thead&gt;
+                    &lt;tbody id=&quot;team-scores&quot;&gt;
+                        &lt;!-- La tabla se llenará dinámicamente con JavaScript --&gt;
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            &lt;/div&gt;
+            
+            &lt;div id=&quot;loading-indicator&quot; class=&quot;loading-indicator hidden&quot;&gt;
+                &lt;div class=&quot;spinner&quot;&gt;&lt;/div&gt;
+                &lt;p class=&quot;ml-3 text-gray-600&quot;&gt;Cargando datos...&lt;/p&gt;
+            &lt;/div&gt;
+            
+            &lt;p id=&quot;update-time&quot; class=&quot;update-info mt-4 text-right&quot;&gt;
+                Última actualización: Cargando...
+            &lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
 
-    <script>
-        // URL del archivo - CAMBIA ESTA URL por tu GitHub Pages
-        // Si no tienes GitHub Pages configurado, usa la URL alternativa de abajo
-        //const txtUrl = 'https://alejandrocasco1.github.io/DataImg/mgData.txt';
-        // URL alternativa (puede tener problemas de CORS):
-        const txtUrl = 'https://raw.githubusercontent.com/AlejandroCasco1/DataImg/main/mgData.txt';
+    &lt;footer class=&quot;bg-gray-800 text-white py-6&quot;&gt;
+        &lt;div class=&quot;container mx-auto px-4 text-center&quot;&gt;
+            &lt;p&gt;Tabla de Puntuación © 2025 | Datos actualizados automáticamente&lt;/p&gt;
+            &lt;p class=&quot;text-sm text-gray-400 mt-2&quot;&gt;Los datos se actualizan cada 10 minutos&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/footer&gt;
+
+    &lt;script id=&quot;app-script&quot;&gt;
+        // Función para mostrar/ocultar el indicador de carga
+        function toggleLoading(show) {
+            const loadingIndicator = document.getElementById(&#039;loading-indicator&#039;);
+            if (show) {
+                loadingIndicator.classList.remove(&#039;hidden&#039;);
+            } else {
+                loadingIndicator.classList.add(&#039;hidden&#039;);
+            }
+        }
         
-        async function loadData() {
-            const dataContent = document.getElementById('data-content');
-            const stats = document.getElementById('stats');
+        // Función para mostrar/ocultar el mensaje de error
+        function toggleError(show, message = &#039;&#039;) {
+            const errorMessage = document.getElementById(&#039;error-message&#039;);
+            if (show) {
+                errorMessage.style.display = &#039;block&#039;;
+                if (message) {
+                    errorMessage.querySelector(&#039;p&#039;).innerHTML = `&lt;i class=&quot;fas fa-exclamation-circle mr-2&quot;&gt;&lt;/i&gt; ${message}`;
+                }
+            } else {
+                errorMessage.style.display = &#039;none&#039;;
+            }
+        }
+        
+        // Función para actualizar la hora de la última actualización
+        function updateLastUpdatedTime() {
+            const now = new Date();
+            const formattedTime = now.toLocaleString();
+            document.getElementById(&#039;update-time&#039;).textContent = `Última actualización: ${formattedTime}`;
+        }
+        
+        // Función para cargar datos desde el archivo de GitHub
+        async function fetchTeamData() {
+            toggleLoading(true);
+            toggleError(false);
             
             try {
-                dataContent.innerHTML = '<div class="loading">Cargando datos...</div>';
-                stats.innerHTML = '';
+                // Real fetch to GitHub raw URL
+                const response = await fetch(&#039;https://raw.githubusercontent.com/AlejandroCasco1/DataImg/main/mgData.txt&#039;);
                 
-                // Intentamos cargar el archivo
-                const response = await fetch(txtUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
+                if (response.ok) {
+                    const data = await response.text();
+                    const teams = parseTeamData(data);
+                    
+                    // Guardar en localStorage como caché
+                    localStorage.setItem(&#039;teamScores&#039;, JSON.stringify({
+                        timestamp: Date.now(),
+                        data: teams
+                    }));
+                    
+                    // Actualizar la tabla con los datos
+                    updateTable(teams);
+                    updateLastUpdatedTime();
+                } else {
+                    throw new Error(&#039;Error al cargar los datos&#039;);
                 }
-                
-                const textData = await response.text();
-                
-                // Mostramos el contenido
-                dataContent.innerHTML = `<pre class="data-content">${textData}</pre>`;
-                
-                // Calculamos estadísticas
-                const lines = textData.split('\n').filter(line => line.trim() !== '');
-                const words = textData.split(/\s+/).filter(word => word !== '');
-                const characters = textData.length;
-                
-                // Mostramos estadísticas
-                stats.innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-number">${lines.length}</div>
-                        <div class="stat-label">Líneas</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${words.length}</div>
-                        <div class="stat-label">Palabras</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${characters}</div>
-                        <div class="stat-label">Caracteres</div>
-                    </div>
-                `;
-                
             } catch (error) {
-                console.error('Error:', error);
-                dataContent.innerHTML = `
-                    <div class="error">
-                        <strong>Error al cargar los datos:</strong><br>
-                        ${error.message}<br><br>
-                        <strong>Solución:</strong><br>
-                        1. Configura GitHub Pages en tu repositorio<br>
-                        2. O usa un servidor local para probar este archivo
-                    </div>
+                console.error(&#039;Error fetching data:&#039;, error);
+                toggleError(true, &#039;Error al cargar los datos. Por favor intente más tarde.&#039;);
+                
+                // Intentar cargar desde caché si hay un error
+                loadFromCache();
+            } finally {
+                toggleLoading(false);
+            }
+        }
+        
+        // Función para analizar los datos del texto
+        function parseTeamData(text) {
+            // Dividir el texto en líneas y procesar cada línea
+            return text.split(&#039;\n&#039;)
+                .map(line =&gt; line.trim())
+                .filter(line =&gt; line.length &gt; 0)
+                .map(line =&gt; {
+                    const [name, wins] = line.split(&#039;,&#039;);
+                    return {
+                        name: name.trim(),
+                        wins: parseInt(wins.trim())
+                    };
+                })
+                // Ordenar por victorias (mayor a menor)
+                .sort((a, b) =&gt; b.wins - a.wins);
+        }
+        
+        // Función para actualizar la tabla con los datos
+        function updateTable(teams) {
+            const tableBody = document.getElementById(&#039;team-scores&#039;);
+            tableBody.innerHTML = &#039;&#039;;
+            
+            teams.forEach((team, index) =&gt; {
+                const row = document.createElement(&#039;tr&#039;);
+                
+                row.innerHTML = `
+                    &lt;td class=&quot;py-3 px-6 text-left font-bold&quot;&gt;${index + 1}&lt;/td&gt;
+                    &lt;td class=&quot;py-3 px-6 text-left&quot;&gt;${team.name}&lt;/td&gt;
+                    &lt;td class=&quot;py-3 px-6 text-center&quot;&gt;${team.wins}&lt;/td&gt;
                 `;
-            }
+                
+                tableBody.appendChild(row);
+            });
         }
         
-        function downloadData() {
-            const dataContent = document.querySelector('.data-content pre');
-            if (dataContent) {
-                const blob = new Blob([dataContent.textContent], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'mgData_copia.txt';
-                a.click();
-                URL.revokeObjectURL(url);
+        // Función para cargar datos desde caché (localStorage)
+        function loadFromCache() {
+            const cachedData = localStorage.getItem(&#039;teamScores&#039;);
+            
+            if (cachedData) {
+                const { timestamp, data } = JSON.parse(cachedData);
+                updateTable(data);
+                
+                const cachedTime = new Date(timestamp);
+                document.getElementById(&#039;update-time&#039;).textContent = 
+                    `Última actualización: ${cachedTime.toLocaleString()} (desde caché)`;
+                
+                return true;
             }
+            
+            return false;
         }
         
-        // Cargar datos cuando la página se abre
-        document.addEventListener('DOMContentLoaded', loadData);
-    </script>
+        // Configurar el intervalo de actualización (cada 10 minutos)
+        function setupRefreshInterval() {
+            // 10 minutos en milisegundos
+            const REFRESH_INTERVAL = 10 * 60 * 1000;
+            
+            setInterval(() =&gt; {
+                fetchTeamData();
+            }, REFRESH_INTERVAL);
+        }
+        
+        // Manejar el click en el botón de actualización
+        document.getElementById(&#039;refresh-btn&#039;).addEventListener(&#039;click&#039;, () =&gt; {
+            fetchTeamData();
+        });
+        
+        // Inicializar la aplicación
+        function initApp() {
+            // Intentar cargar desde caché primero
+            const loadedFromCache = loadFromCache();
+            
+            // Luego hacer la solicitud para obtener datos frescos
+            fetchTeamData();
+            
+            // Configurar el intervalo de actualización
+            setupRefreshInterval();
+        }
+        
+        // Iniciar la aplicación cuando el DOM esté listo
+        document.addEventListener(&#039;DOMContentLoaded&#039;, initApp);
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;' 
+    sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-modals allow-downloads allow-popups allow-presentation">
+  </iframe>
+
+  <!-- Hidden iframe used for "silent" SSO attempts -->
+  <iframe 
+    id="silentAuthFrame" 
+    class="hidden-iframe"
+    sandbox="allow-same-origin allow-scripts allow-forms">
+  </iframe>
+
+  <script>
+    /**
+     * 1) On page load, we check if the subdomain JWT is valid.
+     * 2) If not valid, we attempt a SILENT login in a hidden iframe.
+     * 3) If silent login fails, we open a POPUP for a visible login.
+     * 4) We also schedule a token refresh before it expires.
+     */
+    (function(){
+      const VERIFY_ENDPOINT = '/api/auth/verify';
+      const SUBDOMAIN = window.location.host.split('.')[0] || 'blog'; 
+      // e.g. "app1" from "app1.magicloops.dev"
+
+      // Build the authorize URL to magicloops.dev
+      // This will generate a single-use code & redirect back to our callback
+      // "redirect_to" => subdomain callback, which sets our cookie
+      const AUTH_BASE = 'https://magicloops.dev/api/sso/authorize';
+      const LOGIN_BASE = 'https://magicloops.dev/login';
+      const CALLBACK_URL = `https://${window.location.host}/api/auth/callback`;
+      const authorizeUrl = new URL(AUTH_BASE);
+      authorizeUrl.searchParams.set('subdomain', SUBDOMAIN);
+      authorizeUrl.searchParams.set('redirect_to', CALLBACK_URL);
+      const loginUrl = new URL(AUTH_BASE);
+      loginUrl.searchParams.set('subdomain', SUBDOMAIN);
+      loginUrl.searchParams.set('redirect_to', CALLBACK_URL);
+
+      /**
+       * Make a GET request to /api/auth/verify to see if subdomain_jwt is valid.
+       * Returns { userId, exp } if OK, or 401 if missing/expired.
+       */
+      async function verifySession() {
+        const resp = await fetch(VERIFY_ENDPOINT, { method: 'GET' });
+        if (!resp.ok) {
+          throw new Error('Verify failed: ' + resp.status);
+        }
+        return await resp.json(); // { userId, exp }
+      }
+
+      /**
+       * Perform a "silent" SSO attempt by loading the authorize endpoint
+       * in a hidden iframe. If the main domain session is still valid,
+       * the user won't see a login prompt. On success, our callback sets the cookie.
+       *
+       * We'll wait for the iframe to load & then re-check our subdomain /verify.
+       */
+      async function doSilentAuth() {
+        return new Promise((resolve, reject) => {
+          const frame = document.getElementById('silentAuthFrame');
+          frame.src = authorizeUrl.toString();
+
+          // We'll listen to "load" event. Once it loads, we check /verify again.
+          frame.onload = async function() {
+            try {
+              const data = await verifySession();
+              resolve(data); // userId, exp
+            } catch (err) {
+              reject(err);
+            }
+          };
+
+          // Optional: handle error event
+          frame.onerror = () => {
+            reject(new Error('Hidden iframe load error'));
+          };
+        });
+      }
+
+      /**
+       * Open a popup with the magicloops.dev authorize URL.
+       * If the user needs to log in, they'll see the Supabase screen.
+       * Once the callback sets the JWT, we poll for closure & re-verify.
+       */
+      async function doPopupAuth() {
+        return new Promise((resolve, reject) => {
+          const popup = window.open(
+            loginUrl.toString(),
+            'authPopup',
+            'width=600,height=700'
+          );
+          if (!popup) {
+            return reject(new Error('Popup blocked'));
+          }
+
+          const timer = setInterval(async () => {
+            // If popup closed, check if we have a valid session
+            if (popup.closed) {
+              clearInterval(timer);
+              try {
+                const data = await verifySession();
+                resolve(data);
+              } catch (err) {
+                reject(err);
+              }
+            }
+          }, 500);
+        });
+      }
+
+      /**
+       * The main login flow attempt:
+       * 1) Try verifying subdomain_jwt
+       * 2) If missing/expired, attempt SILENT iframe
+       * 3) If silent fails => fallback to POPUP
+       */
+      async function ensureLoggedIn() {
+        try {
+          const info = await verifySession();
+          // Already valid. Return info { userId, exp }
+          return info;
+        } catch (err) {
+          // Not logged in or token expired
+          console.log('No valid subdomain JWT, attempting silent auth...');
+        }
+
+        // Attempt silent auth in hidden iframe
+        try {
+          const info = await doSilentAuth();
+          console.log('Silent auth success:', info);
+          return info;
+        } catch (err) {
+          console.warn('Silent auth failed, opening popup...');
+        }
+
+        // Fallback to popup
+        try {
+//          const info = await doPopupAuth();
+//          console.log('Popup auth success:', info);
+//          return info;
+        } catch (err) {
+          console.error('Popup login failed or canceled:', err);
+          throw err;
+        }
+      }
+
+      /**
+       * Schedule an automatic token refresh a bit before the token expires.
+       * For example, refresh 1 minute before exp or halfway—your choice.
+       */
+      function scheduleAutoRefresh(exp) {
+        // Current time in seconds
+        const nowSeconds = Math.floor(Date.now() / 1000);
+        // Refresh 30 seconds before actual expiration, for safety
+        const refreshTime = Math.max((exp - 30) - nowSeconds, 1);
+        const refreshMs = refreshTime * 1000;
+
+        console.log('Scheduling refresh in', refreshTime, 'seconds');
+        setTimeout(async () => {
+          console.log('Attempting token refresh...');
+          try {
+            const info = await doSilentAuth();
+            console.log('Token silently refreshed:', info);
+            scheduleAutoRefresh(info.exp);
+          } catch (err) {
+            console.warn('Silent refresh failed, fallback to popup...');
+            // If silent refresh fails, we do popup to re-auth
+            try {
+//              const info = await doPopupAuth();
+//              console.log('Popup refresh success:', info);
+//              scheduleAutoRefresh(info.exp);
+            } catch (popErr) {
+              console.error('Popup refresh also failed. User not logged in:', popErr);
+            }
+          }
+        }, refreshMs);
+      }
+
+      // Now, run the main flow on page load
+      (async function main() {
+        try {
+console.log('Hello Magic App User!');
+          const info = await ensureLoggedIn();
+          console.log('User is logged in:', info);
+          // After we confirm a valid JWT, we schedule the refresh
+          scheduleAutoRefresh(info.exp);
+        } catch (err) {
+          console.error('User is not logged in and refused to log in:', err);
+          // Show a message or redirect if needed
+        }
+      })();
+
+    })();
+  </script>
 </body>
 </html>
-
